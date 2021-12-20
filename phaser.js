@@ -4,7 +4,7 @@ function set() {
   var fireAge = 45;
   var nestEgg = 150000;
   var expenses = 40000;
-  var returnRate = 5;
+  var returnRate = 7.5;
 
   document.getElementById("currentAge").value = currentAge;
   document.getElementById("currentAgeDisplay").innerHTML = currentAge;

@@ -5,11 +5,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description"
-    content="An attempt at mapping a personal hierarchy of guiding principles">
+    content="The best retirement calculator">
   <meta property="og:url" content="https://fire.markfullmer.com/" />
   <meta property="og:site_name" content="Mantrafesto, by Mark Fullmer" />
-  <title>Phaser FIRE Calculator</title>
+  <title>Phased Retirement Calculator</title>
   <style>
+    body {
+      width: max-content;
+      margin: auto;
+      font-family: Verdana, sans-serif;
+    }
+    main {
+      margin: auto;
+    }
     h1 {
       font-size: 3rem;
       margin-top: 1.5rem;
@@ -18,9 +26,9 @@
     nav {
       border-bottom: 1px solid #3d3d3d;
     }
-    #table table,
-    #table th,
-    #table td {
+    table.chart,
+    table.chart th,
+    table.chart td {
       border: 1px solid black;
       border-collapse: collapse;
       padding: 0.5rem;
@@ -37,17 +45,29 @@
 </head>
 
 <body onload="set()">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"
-  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
-  crossorigin="anonymous"></script>
-<script type="text/javascript" src="calc.js"></script>
+<script type="text/javascript" src="phaser.js"></script>
 <nav>
-  <h1>Phaser FIRE Calculator</h1>
+  <h1>Phased Retirement Calculator</h1>
 </nav>
+This retirement calculator differs from most in that it frames financial progression in phases:
+<ul>
+  <li>full-time work</li>
+  <li>part-time work (optional)</li>
+  <li>full retirement, pre-Social Security</li>
+  <li>retirement, with Social Security (post 65)</li>
+</ul>
+Other notes:
+<ul>
+  <li>Estimated expenses during retirment increase at 2% inflation</li>
+  <li>Social Security benefits are estimated conservatively, given you'll be working fewer years</li>
+</ul>
+
+<main>
+<div class="panel">
 <table>
 <tr>
   <td>
-    <label for="currentAge">Current Age</label>
+    <label for="currentAge">Current age</label>
   </td>
   <td>
     <input oninput="fire()" type="range" min="18" max="50" id="currentAge">
@@ -56,7 +76,16 @@
 </tr>
 <tr>
   <td>
-    <label for="fireAge">Age to stop working</label>
+    <label for="partTimeYears">Number of years to spend working part-time</label>
+  </td>
+  <td>
+    <input oninput="fire()" type="range" min="0" max="15" id="partTimeYears">
+    <output id="partTimeYearsDisplay"></output>
+  </td>
+</tr>
+<tr>
+  <td>
+    <label for="fireAge">Age to stop working completely</label>
   </td>
   <td>
     <input oninput="fire()" type="range" min="30" max="60" id="fireAge">
@@ -91,13 +120,16 @@
   </td>
 </tr>
 </table>
-<div class="panel">
-  <h3>Calculated monthly contribution: <em id="contribution"></em></h3>
+  <hr>
+  <h3>Calculated monthly contribution during full-time work phase: <em id="contribution"></em></h3>
 </div>
 
 
-<div id="table"></div>
-
+<div id="fullTime"></div>
+<div id="partTime"></div>
+<div id="preSocial"></div>
+<div id="social"></div>
+</main>
 </body>
 
 

@@ -125,6 +125,9 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
 
 function generateTable(list, title) {
   var table = document.createElement("table");
+  if (list.length == 0) {
+    return table;
+  }
   table.setAttribute("class", "chart");
   table.innerHTML = '<caption>' + title + '</caption>';
   var tr = table.insertRow(-1);
@@ -160,31 +163,34 @@ function fire() {
 
   // Output.
   var data = calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, expenses);
-  if (data.get('fullTime').length !== 0) {
-    var fullTime = generateTable(data.get('fullTime'), 'Full-time phase');
-    var el = document.getElementById("fullTime");
-    el.innerHTML = "";
-    el.appendChild(fullTime);
+  var fullTime = generateTable(data.get('fullTime'), 'Full-time phase');
+  var el = document.getElementById("fullTime");
+  el.innerHTML = "";
+  el.appendChild(fullTime);
+  var partTime = generateTable(data.get('partTime'), 'Part-time phase');
+  var el = document.getElementById("partTime");
+  el.innerHTML = "";
+  el.appendChild(partTime);
+  var preSocial = generateTable(data.get('preSocial'), 'Pre-Social Security phase');
+  var el = document.getElementById("preSocial");
+  el.innerHTML = "";
+  el.appendChild(preSocial);
+  var social = generateTable(data.get('social'), 'Social Security phase');
+  var el = document.getElementById("social");
+  el.innerHTML = "";
+  el.appendChild(social);
+
+  var fullTimeContributionDisplay = 0;
+  if (data.get('fullTime')[0]) {
+    fullTimeContributionDisplay = Number(data.get('fullTime')[0].get('contribution') / 12).toLocaleString()
   }
-  if (data.get('partTime').length !== 0) {
-    var partTime = generateTable(data.get('partTime'), 'Part-time phase');
-    var el = document.getElementById("partTime");
-    el.innerHTML = "";
-    el.appendChild(partTime);
+  document.getElementById("contribution").innerHTML = '$' + fullTimeContributionDisplay;
+
+  var partTimeContributionDisplay = 0;
+  if (data.get('partTime')[0]) {
+    partTimeContributionDisplay = Number(data.get('partTime')[0].get('contribution') / 12).toLocaleString()
   }
-  if (data.get('preSocial').length !== 0) {
-    var preSocial = generateTable(data.get('preSocial'), 'Pre-Social Security phase');
-    var el = document.getElementById("preSocial");
-    el.innerHTML = "";
-    el.appendChild(preSocial);
-  }
-  if (data.get('social').length !== 0) {
-    var social = generateTable(data.get('social'), 'Social Security phase');
-    var el = document.getElementById("social");
-    el.innerHTML = "";
-    el.appendChild(social);
-  }
-  document.getElementById("contribution").innerHTML = '$' + Number(data.get('fullTime')[0].get('contribution') / 12).toLocaleString();
+  document.getElementById("partTimeContribution").innerHTML = '$' + partTimeContributionDisplay;
 
   // Update displays.
   document.getElementById("currentAgeDisplay").innerHTML = currentAge;

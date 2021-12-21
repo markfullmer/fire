@@ -6,12 +6,13 @@ Permissions of this strong copyleft license are conditioned on making available 
 Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
 */
 function set() {
-  var currentAge = 30;
-  var partTimeYears = 5;
-  var fireAge = 45;
-  var nestEgg = 150000;
-  var expenses = 40000;
-  var returnRate = 7.5;
+  const urlParams = new URLSearchParams(window.location.search);
+  var currentAge = urlParams.get('currentAge') ?? 30;
+  var partTimeYears = urlParams.get('partTimeYears') ?? 5;
+  var fireAge = urlParams.get('fireAge') ?? 45;
+  var nestEgg = urlParams.get('nestEgg') ?? 150000;
+  var expenses = urlParams.get('expenses') ?? 40000;
+  var returnRate = urlParams.get('returnRate') ?? 7.5;
 
   document.getElementById("currentAge").value = currentAge;
   document.getElementById("currentAgeDisplay").innerHTML = currentAge;
@@ -26,6 +27,19 @@ function set() {
   document.getElementById("returnRate").value = returnRate;
   document.getElementById("returnRateDisplay").innerHTML = returnRate;
   fire();
+}
+
+function shareUrl() {
+  const params = new URLSearchParams({
+    currentAge: document.getElementById("currentAge").value,
+    partTimeYears: document.getElementById("partTimeYears").value,
+    fireAge: document.getElementById("fireAge").value,
+    nestEgg: document.getElementById("nestEgg").value,
+    expenses: document.getElementById("expenses").value,
+    returnRate: document.getElementById("returnRate").value,
+  });
+  var url = window.location.origin + '?' + params.toString();
+  document.getElementById("shareUrl").innerHTML = '<a href="' + url + '">' + url + '</a>';
 }
 
 function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, expenses) {

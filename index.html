@@ -10,9 +10,14 @@
   <title>Phased Retirement Calculator</title>
   <style>
     body {
-      width: max-content;
+      width: auto;
       margin: auto;
       font-family: Verdana, sans-serif;
+    }
+    @media only screen and (min-width: 600px) {
+      body {
+        width: max-content;
+      }
     }
     main {
       margin: auto;
@@ -124,8 +129,9 @@ Other notes:
 </table>
   <hr>
   <h3>Calculated monthly contribution during full-time work phase: <em id="contribution"></em></h3>
-  <h3>Calculated monthly contribution during part-time work phase: <em
-      id="partTimeContribution"></em></h3>
+  <h3>Calculated monthly contribution during part-time work phase: <em id="partTimeContribution"></em></h3>
+  <button onclick="shareUrl()">Get a shareable URL of this calculation</button>
+  <div id="shareUrl"></div>
 </div>
 
 

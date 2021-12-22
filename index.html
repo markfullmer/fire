@@ -129,10 +129,15 @@ Other notes:
     <output id="returnRateDisplay"></output>
   </td>
 </tr>
+<tr>
+  <td colspan="2">
+    <input oninput="fire()" type="checkbox" id="salaryIncrease" />Increase contributions by 5% annually to reflect salary raise
+  </td>
+</tr>
 </table>
   <hr>
-  <h3>Calculated monthly contribution during full-time work phase: <em id="contribution"></em></h3>
-  <h3>Calculated monthly contribution during part-time work phase: <em id="partTimeContribution"></em></h3>
+  <h3>Starting amount to save, full-time phase: <em id="contribution"></em> per month</h3>
+  <h3>Amount to save, part-time phase: <em id="partTimeContribution"></em> per month</h3>
   <button onclick="shareUrl()">Get a shareable URL of this calculation</button>
   <div id="shareUrl"></div>
 </div>

@@ -13,6 +13,7 @@ function set() {
   var nestEgg = urlParams.get('nestEgg') ?? 150000;
   var expenses = urlParams.get('expenses') ?? 40000;
   var returnRate = urlParams.get('returnRate') ?? 7.5;
+  var salaryIncrease = urlParams.get('salaryIncrease') === 'true' ? true : false;
 
   document.getElementById("currentAge").value = currentAge;
   document.getElementById("currentAgeDisplay").innerHTML = currentAge;
@@ -23,6 +24,7 @@ function set() {
   document.getElementById("nestEgg").value = nestEgg;
   document.getElementById("nestEggDisplay").innerHTML = '$' + Number(nestEgg).toLocaleString();
   document.getElementById("expenses").value = expenses;
+  document.getElementById("salaryIncrease").checked = salaryIncrease;
   document.getElementById("expensesDisplay").innerHTML = '$' + Number(expenses).toLocaleString();
   document.getElementById("returnRate").value = returnRate;
   document.getElementById("returnRateDisplay").innerHTML = returnRate;
@@ -37,16 +39,17 @@ function shareUrl() {
     nestEgg: document.getElementById("nestEgg").value,
     expenses: document.getElementById("expenses").value,
     returnRate: document.getElementById("returnRate").value,
+    salaryIncrease: document.getElementById("salaryIncrease").checked,
   });
   var url = window.location.origin + '?' + params.toString();
   document.getElementById("shareUrl").innerHTML = '<a href="' + url + '">' + url + '</a>';
 }
 
-function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, expenses) {
+function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, expenses, salaryIncrease) {
   var preSocial = 65 - fireAge;
   var fullTimeYears = Number(fireAge - partTimeYears - currentAge);
   var balance = Number(nestEgg);
-  var contribution = 0 * 12;
+  var contribution = 0;
   var partTimeContribution = 0;
   var breakeven = false;
   var returnRate = returnRate / 100;
@@ -63,31 +66,40 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
     preSocialTable = [];
     socialTable = [];
     currentYear = new Date().getFullYear();
+    adjustedContribution = contribution;
+    let increase = 0;
+    if (salaryIncrease) {
+      increase = contribution * 0.05;
+    }
     for (let i = 0; i <= fullTimeYears; i++) {
-      balance = Number((balance * returnRate) + balance + contribution);
+      var returnOnInvestment = Number(Math.round(balance * returnRate));
+      balance = Number(returnOnInvestment + balance + adjustedContribution);
       let row = new Map();
       row.set('year', currentYear);
       row.set('age', Number(currentAge) + i);
       row.set('balance', balance);
-      row.set('contribution', contribution);
+      row.set('contribution', adjustedContribution);
+      row.set('return', returnOnInvestment);
       row.set('withdrawal', 0);
       fullTimeTable.push(row);
       currentYear++;
+      adjustedContribution = adjustedContribution + increase;
     }
     if (partTimeYears > 0) {
       for (let j = 1; j <= partTimeYears; j++) {
-        balance = (balance * returnRate) + balance + partTimeContribution;
+        var returnOnInvestment = Number(Math.round(balance * returnRate));
+        balance = returnOnInvestment + balance + partTimeContribution;
         let row = new Map();
         row.set('year', currentYear);
         row.set('age', Number(currentAge) + Number(fullTimeYears) + j);
         row.set('balance', balance);
         row.set('contribution', partTimeContribution);
+        row.set('return', returnOnInvestment);
         row.set('withdrawal', 0);
         partTimeTable.push(row);
         currentYear++;
       }
     }
-    let returnOnInvestment = balance * returnRate;
     if (returnOnInvestment > medianExpenses) {
       breakeven = true;
     }
@@ -99,12 +111,14 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   }
   // Show post-retirement, pre-Social Security period
   for (let i = 1; i <= preSocial; i++) {
-    balance = (balance + (balance * returnRate) - expenses);
+    var returnOnInvestment = Number(Math.round(balance * returnRate));
+    balance = balance + returnOnInvestment - expenses;
     let row = new Map();
     row.set('year', currentYear);
     row.set('age', Number(fireAge) + i);
     row.set('balance', balance);
     row.set('contribution', 0);
+    row.set('return', returnOnInvestment);
     row.set('withdrawal', expenses);
     preSocialTable.push(row);
     // Calculate expenses based on 2% inflation.
@@ -114,12 +128,14 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   // Show Social Security period.
   contribution = expenses / 3;
   for (let i = 66; i <= 90; i++) {
-    balance = (balance + (balance * returnRate) - expenses + contribution);
+    var returnOnInvestment = Number(Math.round(balance * returnRate));
+    balance = balance + returnOnInvestment - expenses;
     let row = new Map();
     row.set('year', currentYear);
     row.set('age', i);
     row.set('balance', balance);
-    row.set('contribution', contribution);
+    row.set('contribution', 0);
+    row.set('return', returnOnInvestment);
     row.set('withdrawal', expenses);
     socialTable.push(row);
 
@@ -137,7 +153,7 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   return table;
 }
 
-function generateTable(list, title) {
+function generateTable(list, title, returnRate) {
   var table = document.createElement("table");
   if (list.length == 0) {
     return table;
@@ -145,7 +161,7 @@ function generateTable(list, title) {
   table.setAttribute("class", "chart");
   table.innerHTML = '<caption>' + title + '</caption>';
   var tr = table.insertRow(-1);
-  var header = ['Year', 'Age', 'Balance', 'Contribution', 'Withdrawal'];
+  var header = ['Year', 'Age', 'Balance', 'Return (' + returnRate + '%)', 'Contribution', 'Withdrawal'];
   for (var i = 0; i < header.length; i++) {
     var theader = document.createElement("th");
     theader.innerHTML = header[i];
@@ -159,8 +175,10 @@ function generateTable(list, title) {
     age.innerHTML = list[i].get('age');
     var balance = trow.insertCell(-1);
     balance.innerHTML = '$' + Number(Math.round(list[i].get('balance'))).toLocaleString();
+    var returnOnInvestment = trow.insertCell(-1);
+    returnOnInvestment.innerHTML = '$' + Number(Math.round(list[i].get('return'))).toLocaleString();
     var contribution = trow.insertCell(-1);
-    contribution.innerHTML = '$' + Number(Math.round(list[i].get('contribution'))).toLocaleString();
+    contribution.innerHTML = '$' + Number(Math.round(list[i].get('contribution'))).toLocaleString() + ' ($' + Number(Math.round(list[i].get('contribution') /12)) + ' monthly)';
     var withdrawal = trow.insertCell(-1);
     withdrawal.innerHTML = '$' + Number(Math.round(list[i].get('withdrawal'))).toLocaleString();
   }
@@ -174,22 +192,22 @@ function fire() {
   var nestEgg = document.getElementById('nestEgg').value;
   var expenses = document.getElementById('expenses').value;
   var returnRate = document.getElementById('returnRate').value;
-
+  var salaryIncrease = document.getElementById('salaryIncrease').checked;
   // Output.
-  var data = calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, expenses);
-  var fullTime = generateTable(data.get('fullTime'), 'Full-time phase');
+  var data = calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, expenses, salaryIncrease);
+  var fullTime = generateTable(data.get('fullTime'), 'Full-time phase', returnRate);
   var el = document.getElementById("fullTime");
   el.innerHTML = "";
   el.appendChild(fullTime);
-  var partTime = generateTable(data.get('partTime'), 'Part-time phase');
+  var partTime = generateTable(data.get('partTime'), 'Part-time phase', returnRate);
   var el = document.getElementById("partTime");
   el.innerHTML = "";
   el.appendChild(partTime);
-  var preSocial = generateTable(data.get('preSocial'), 'Pre-Social Security phase');
+  var preSocial = generateTable(data.get('preSocial'), 'Pre-Social Security phase', returnRate);
   var el = document.getElementById("preSocial");
   el.innerHTML = "";
   el.appendChild(preSocial);
-  var social = generateTable(data.get('social'), 'Social Security phase');
+  var social = generateTable(data.get('social'), 'Social Security phase', returnRate);
   var el = document.getElementById("social");
   el.innerHTML = "";
   el.appendChild(social);

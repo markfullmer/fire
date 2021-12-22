@@ -58,7 +58,7 @@
 </nav>
 This retirement calculator structures financial progression in phases:
 <ul>
-  <li>full-time work</li>
+  <li>full-time work (with an option to gradually increase contributions)</li>
   <li>part-time work (optional)</li>
   <li>full retirement, pre-Social Security (pre 65)</li>
   <li>retirement, with Social Security (post 65)</li>
@@ -130,15 +130,18 @@ Other notes:
   </td>
 </tr>
 <tr>
-  <td colspan="2">
-    <input oninput="fire()" type="checkbox" id="salaryIncrease" />Increase contributions by 5% annually to reflect salary raise
+  <td>
+    <label for="salaryIncrease">Increase contributions by 5% annually to reflect salary raise</label>
+  </td>
+  <td>
+    <input oninput="fire()" type="checkbox" id="salaryIncrease" />
   </td>
 </tr>
 </table>
   <hr>
   <h3>Starting amount to save, full-time phase: <em id="contribution"></em> per month</h3>
   <h3>Amount to save, part-time phase: <em id="partTimeContribution"></em> per month</h3>
-  <button onclick="shareUrl()">Get a shareable URL of this calculation</button>
+  <button onclick="shareUrl()">Get a shareable link to this calculation</button>
   <div id="shareUrl"></div>
 </div>
 

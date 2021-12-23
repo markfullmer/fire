@@ -54,7 +54,7 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   var breakeven = false;
   var returnRate = returnRate / 100;
   var currentYear = new Date().getFullYear();
-  let medianExpenses = expenses * 1.25;
+  let medianExpenses = expenses * 1.2;
   let fullTimeTable = [];
   let partTimeTable = [];
   let preSocialTable = [];
@@ -148,8 +148,6 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
     row.set('balance', balance);
     socialTable.push(row);
 
-    // Calculate a 1% annual social security increase;
-    // contribution = contribution * 1.01;
     // Calculate expenses based on 2% inflation.
     expenses = expenses * 1.02;
     currentYear++;
@@ -237,7 +235,7 @@ function fire() {
 
   var partTimeContributionDisplay = 0;
   if (data.get('partTime')[0]) {
-    partTimeContributionDisplay = Number(data.get('partTime')[0].get('contribution') / 12).toLocaleString()
+    partTimeContributionDisplay = Number(Math.round(data.get('partTime')[0].get('contribution') / 12)).toLocaleString()
   }
   document.getElementById("partTimeContribution").innerHTML = '$' + partTimeContributionDisplay;
 

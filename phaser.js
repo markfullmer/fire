@@ -123,7 +123,7 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
     row.set('age', Number(fireAge) + i);
     row.set('start', balance);
     row.set('contribution', 0);
-    var returnOnInvestment = Number(Math.round(balance * returnRate));
+    var returnOnInvestment = Number(Math.round((balance - expenses) * returnRate));
     row.set('return', returnOnInvestment);
     row.set('withdrawal', expenses);
     balance = balance + returnOnInvestment - expenses;
@@ -140,11 +140,11 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
     row.set('year', currentYear);
     row.set('age', i);
     row.set('start', balance);
-    row.set('contribution', 0);
-    var returnOnInvestment = Number(Math.round(balance * returnRate));
+    row.set('contribution', contribution);
+    var returnOnInvestment = Number(Math.round((balance - expenses) * returnRate));
     row.set('return', returnOnInvestment);
     row.set('withdrawal', expenses);
-    balance = balance + returnOnInvestment - expenses;
+    balance = balance + returnOnInvestment - expenses + contribution;
     row.set('balance', balance);
     socialTable.push(row);
 
@@ -191,7 +191,7 @@ function generateTable(list, title, returnRate) {
     returnOnInvestment.innerHTML = '$' + Number(Math.round(list[i].get('return'))).toLocaleString();
 
     var contribution = trow.insertCell(-1);
-    contribution.innerHTML = '$' + Number(Math.round(list[i].get('contribution'))).toLocaleString() + ' ($' + Number(Math.round(list[i].get('contribution') /12)) + ' monthly)';
+    contribution.innerHTML = '$' + Number(Math.round(list[i].get('contribution'))).toLocaleString() + ' ($' + Number(Math.round(list[i].get('contribution') /12)).toLocaleString() + ' monthly)';
 
     var withdrawal = trow.insertCell(-1);
     withdrawal.innerHTML = '$' + Number(Math.round(list[i].get('withdrawal'))).toLocaleString();
@@ -231,7 +231,7 @@ function fire() {
 
   var fullTimeContributionDisplay = 0;
   if (data.get('fullTime')[0]) {
-    fullTimeContributionDisplay = Number(data.get('fullTime')[0].get('contribution') / 12).toLocaleString()
+    fullTimeContributionDisplay = Number(Math.round(data.get('fullTime')[0].get('contribution') / 12)).toLocaleString()
   }
   document.getElementById("contribution").innerHTML = '$' + fullTimeContributionDisplay;
 

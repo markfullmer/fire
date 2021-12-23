@@ -59,7 +59,11 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   let partTimeTable = [];
   let preSocialTable = [];
   let socialTable = [];
+  var catcher = 0;
   while (breakeven == false) {
+    if (catcher > 300) {
+      breakeven = true;
+    }
     balance = Number(nestEgg);
     fullTimeTable = [];
     partTimeTable = [];
@@ -72,30 +76,32 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
       increase = contribution * 0.05;
     }
     for (let i = 0; i <= fullTimeYears; i++) {
-      var returnOnInvestment = Number(Math.round(balance * returnRate));
-      balance = Number(returnOnInvestment + balance + adjustedContribution);
       let row = new Map();
       row.set('year', currentYear);
       row.set('age', Number(currentAge) + i);
-      row.set('balance', balance);
+      row.set('start', balance);
       row.set('contribution', adjustedContribution);
+      var returnOnInvestment = Math.round(Number(balance * returnRate));
       row.set('return', returnOnInvestment);
       row.set('withdrawal', 0);
+      balance = Number(returnOnInvestment + balance + adjustedContribution);
+      row.set('balance', balance);
       fullTimeTable.push(row);
       currentYear++;
       adjustedContribution = adjustedContribution + increase;
     }
     if (partTimeYears > 0) {
       for (let j = 1; j <= partTimeYears; j++) {
-        var returnOnInvestment = Number(Math.round(balance * returnRate));
-        balance = returnOnInvestment + balance + partTimeContribution;
         let row = new Map();
         row.set('year', currentYear);
         row.set('age', Number(currentAge) + Number(fullTimeYears) + j);
-        row.set('balance', balance);
+        row.set('start', balance);
         row.set('contribution', partTimeContribution);
+        var returnOnInvestment = Number(Math.round(balance * returnRate));
         row.set('return', returnOnInvestment);
         row.set('withdrawal', 0);
+        balance = returnOnInvestment + balance + partTimeContribution;
+        row.set('balance', balance);
         partTimeTable.push(row);
         currentYear++;
       }
@@ -108,18 +114,20 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
       contribution = contribution + 1000;
       partTimeContribution = contribution / 3;
     }
+    catcher++;
   }
   // Show post-retirement, pre-Social Security period
   for (let i = 1; i <= preSocial; i++) {
-    var returnOnInvestment = Number(Math.round(balance * returnRate));
-    balance = balance + returnOnInvestment - expenses;
     let row = new Map();
     row.set('year', currentYear);
     row.set('age', Number(fireAge) + i);
-    row.set('balance', balance);
+    row.set('start', balance);
     row.set('contribution', 0);
+    var returnOnInvestment = Number(Math.round(balance * returnRate));
     row.set('return', returnOnInvestment);
     row.set('withdrawal', expenses);
+    balance = balance + returnOnInvestment - expenses;
+    row.set('balance', balance);
     preSocialTable.push(row);
     // Calculate expenses based on 2% inflation.
     expenses = expenses * 1.02;
@@ -128,15 +136,16 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   // Show Social Security period.
   contribution = expenses / 3;
   for (let i = 66; i <= 90; i++) {
-    var returnOnInvestment = Number(Math.round(balance * returnRate));
-    balance = balance + returnOnInvestment - expenses;
     let row = new Map();
     row.set('year', currentYear);
     row.set('age', i);
-    row.set('balance', balance);
+    row.set('start', balance);
     row.set('contribution', 0);
+    var returnOnInvestment = Number(Math.round(balance * returnRate));
     row.set('return', returnOnInvestment);
     row.set('withdrawal', expenses);
+    balance = balance + returnOnInvestment - expenses;
+    row.set('balance', balance);
     socialTable.push(row);
 
     // Calculate a 1% annual social security increase;
@@ -161,7 +170,7 @@ function generateTable(list, title, returnRate) {
   table.setAttribute("class", "chart");
   table.innerHTML = '<caption>' + title + '</caption>';
   var tr = table.insertRow(-1);
-  var header = ['Year', 'Age', 'Balance', 'Return (' + returnRate + '%)', 'Contribution', 'Withdrawal'];
+  var header = ['Year', 'Age', 'Starting balance', 'Return (' + returnRate + '%)', 'Contribution', 'Withdrawal', 'Ending balance'];
   for (var i = 0; i < header.length; i++) {
     var theader = document.createElement("th");
     theader.innerHTML = header[i];
@@ -171,16 +180,24 @@ function generateTable(list, title, returnRate) {
     trow = table.insertRow(-1);
     var year = trow.insertCell(-1);
     year.innerHTML = list[i].get('year');
+
     var age = trow.insertCell(-1);
     age.innerHTML = list[i].get('age');
-    var balance = trow.insertCell(-1);
-    balance.innerHTML = '$' + Number(Math.round(list[i].get('balance'))).toLocaleString();
+
+    var start = trow.insertCell(-1);
+    start.innerHTML = '$' + Number(Math.round(list[i].get('start'))).toLocaleString();
+
     var returnOnInvestment = trow.insertCell(-1);
     returnOnInvestment.innerHTML = '$' + Number(Math.round(list[i].get('return'))).toLocaleString();
+
     var contribution = trow.insertCell(-1);
     contribution.innerHTML = '$' + Number(Math.round(list[i].get('contribution'))).toLocaleString() + ' ($' + Number(Math.round(list[i].get('contribution') /12)) + ' monthly)';
+
     var withdrawal = trow.insertCell(-1);
     withdrawal.innerHTML = '$' + Number(Math.round(list[i].get('withdrawal'))).toLocaleString();
+
+    var balance = trow.insertCell(-1);
+    balance.innerHTML = '$' + Number(Math.round(list[i].get('balance'))).toLocaleString();
   }
   return table;
 }

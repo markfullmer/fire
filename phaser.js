@@ -61,7 +61,8 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   let socialTable = [];
   var catcher = 0;
   while (breakeven == false) {
-    if (catcher > 300) {
+    if (catcher > 100) {
+      // Something went wrong. Avoid infinite loop.
       breakeven = true;
     }
     balance = Number(nestEgg);
@@ -81,7 +82,8 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
       row.set('age', Number(currentAge) + i);
       row.set('start', balance);
       row.set('contribution', adjustedContribution);
-      var returnOnInvestment = Math.round(Number(balance * returnRate));
+      // Calculate ROI to include 50% of the annual contribution.
+      var returnOnInvestment = Math.round(Number((balance + adjustedContribution / 2) * returnRate));
       row.set('return', returnOnInvestment);
       row.set('withdrawal', 0);
       balance = Number(returnOnInvestment + balance + adjustedContribution);
@@ -97,7 +99,8 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
         row.set('age', Number(currentAge) + Number(fullTimeYears) + j);
         row.set('start', balance);
         row.set('contribution', partTimeContribution);
-        var returnOnInvestment = Number(Math.round(balance * returnRate));
+      // Calculate ROI to include 50% of the annual contribution.
+        var returnOnInvestment = Number(Math.round((balance + partTimeContribution / 2) * returnRate));
         row.set('return', returnOnInvestment);
         row.set('withdrawal', 0);
         balance = returnOnInvestment + balance + partTimeContribution;
@@ -141,7 +144,8 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
     row.set('age', i);
     row.set('start', balance);
     row.set('contribution', contribution);
-    var returnOnInvestment = Number(Math.round((balance - expenses) * returnRate));
+    // Calculate ROI to include 50% of annual contribution, minus expenses.
+    var returnOnInvestment = Number(Math.round((balance - expenses + contribution / 2) * returnRate));
     row.set('return', returnOnInvestment);
     row.set('withdrawal', expenses);
     balance = balance + returnOnInvestment - expenses + contribution;

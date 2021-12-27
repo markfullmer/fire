@@ -44,11 +44,15 @@
       padding: 0.5rem;
       background: gainsboro;
     }
+    #chart {
+      height: 300px;
+    }
   </style>
+  <script type="text/javascript" src="/canvas.min.js"></script>
+  <script type="text/javascript" src="/phaser.js"></script>
 </head>
 
 <body onload="set()">
-<script type="text/javascript" src="phaser.js"></script>
 <nav>
   <h1>Phased Retirement Calculator</h1>
   Source code: <a href="https://github.com/markfullmer/fire">https://github.com/markfullmer/fire</a> | License: <a href="https://github.com/markfullmer/fire/blob/main/LICENSE">GPL-3.0</a>
@@ -123,11 +127,21 @@ Design:
 </tr>
 <tr>
   <td>
-    <label for="returnRate">Estimated rate of return on investments</label>
+    <label for="returnRate">Estimated return rate before retirement</label>
   </td>
   <td>
     <input oninput="fire()" type="range" min="1" max="10" step="0.25" id="returnRate">
     <output id="returnRateDisplay"></output>
+  </td>
+</tr>
+<tr>
+  <td>
+    <label for="retireReturnRate">Estimated return rate during retirement</label>
+  </td>
+  <td>
+    <input oninput="fire()" type="range" min="1" max="10" step="0.25"
+      id="retireReturnRate">
+    <output id="retireReturnRateDisplay"></output>
   </td>
 </tr>
 <tr>
@@ -145,8 +159,7 @@ Design:
   <button onclick="shareUrl()">Get a shareable link to this calculation</button>
   <div id="shareUrl"></div>
 </div>
-
-
+<div id="chart"></div>
 <div id="fullTime"></div>
 <div id="partTime"></div>
 <div id="preSocial"></div>

@@ -10,11 +10,11 @@ function set() {
   var currentAge = urlParams.get('currentAge') ?? 30;
   var partTimeYears = urlParams.get('partTimeYears') ?? 0;
   var fireAge = urlParams.get('fireAge') ?? 45;
-  var nestEgg = urlParams.get('nestEgg') ?? 150000;
-  var expenses = urlParams.get('expenses') ?? 36000;
+  var nestEgg = urlParams.get('nestEgg') ?? 50000;
+  var expenses = urlParams.get('expenses') ?? 50000;
   var returnRate = urlParams.get('returnRate') ?? 7.5;
   var retireReturnRate = urlParams.get('retireReturnRate') ?? 5;
-  var salaryIncrease = urlParams.get('salaryIncrease') === 'true' ? true : false;
+  var salaryIncrease = urlParams.get('salaryIncrease') === 'false' ? false : true;
 
   document.getElementById("currentAge").value = currentAge;
   document.getElementById("currentAgeDisplay").innerHTML = currentAge;

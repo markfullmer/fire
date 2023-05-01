@@ -1,17 +1,17 @@
-/* 
+/*
 This code is licensed under GPL-3.0.
 
-Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. 
+Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license.
 
 Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
 */
 function set() {
   const urlParams = new URLSearchParams(window.location.search);
   var currentAge = urlParams.get('currentAge') ?? 30;
-  var partTimeYears = urlParams.get('partTimeYears') ?? 5;
+  var partTimeYears = urlParams.get('partTimeYears') ?? 0;
   var fireAge = urlParams.get('fireAge') ?? 45;
   var nestEgg = urlParams.get('nestEgg') ?? 150000;
-  var expenses = urlParams.get('expenses') ?? 40000;
+  var expenses = urlParams.get('expenses') ?? 36000;
   var returnRate = urlParams.get('returnRate') ?? 7.5;
   var retireReturnRate = urlParams.get('retireReturnRate') ?? 5;
   var salaryIncrease = urlParams.get('salaryIncrease') === 'true' ? true : false;
@@ -60,17 +60,19 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
   var retireReturnRate = retireReturnRate / 100;
   var currentYear = new Date().getFullYear();
   let medianExpenses = expenses * 1.2;
+  let startingExpenses = expenses;
   let fullTimeTable = [];
   let partTimeTable = [];
   let preSocialTable = [];
   let socialTable = [];
   var catcher = 0;
   while (breakeven == false) {
+    balance = Number(nestEgg);
+    expenses = startingExpenses;
     if (catcher > 100) {
       // Something went wrong. Avoid infinite loop.
       breakeven = true;
     }
-    balance = Number(nestEgg);
     fullTimeTable = [];
     partTimeTable = [];
     preSocialTable = [];
@@ -104,7 +106,7 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
         row.set('age', Number(currentAge) + Number(fullTimeYears) + j);
         row.set('start', balance);
         row.set('contribution', partTimeContribution);
-      // Calculate ROI to include 50% of the annual contribution.
+        // Calculate ROI to include 50% of the annual contribution.
         var returnOnInvestment = Number(Math.round((balance + partTimeContribution / 2) * returnRate));
         row.set('return', returnOnInvestment);
         row.set('withdrawal', 0);
@@ -114,60 +116,60 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
         currentYear++;
       }
     }
-    var retiredReturnOnInvestment = Number(Math.round((balance - expenses) * retireReturnRate));
-    if (retiredReturnOnInvestment > medianExpenses) {
+
+    // Calculate post-retirement, pre-Social Security period
+    for (let i = 1; i <= preSocial; i++) {
+      let row = new Map();
+      row.set('year', currentYear);
+      row.set('age', Number(fireAge) + i);
+      row.set('start', balance);
+      row.set('contribution', 0);
+      var returnOnInvestment = Number(Math.round((balance - expenses) * retireReturnRate));
+      row.set('return', returnOnInvestment);
+      row.set('withdrawal', expenses);
+      balance = balance + returnOnInvestment - expenses;
+      row.set('balance', Math.round(balance));
+      preSocialTable.push(row);
+      // Calculate expenses based on 2% inflation.
+      expenses = expenses * 1.02;
+      currentYear++;
+    }
+
+    // Calculate Social Security period.
+    let sscontribution = Number(Math.round(expenses / 3));
+    for (let i = 66; i <= 90; i++) {
+      let row = new Map();
+      row.set('year', currentYear);
+      row.set('age', i);
+      row.set('start', balance);
+      row.set('contribution', sscontribution);
+      // Calculate ROI to include 50% of annual contribution, minus expenses.
+      var returnOnInvestment = Number(Math.round((balance - expenses + sscontribution / 2) * retireReturnRate));
+      row.set('return', returnOnInvestment);
+      row.set('withdrawal', expenses);
+      balance = balance + returnOnInvestment - expenses + sscontribution;
+      row.set('balance', Math.round(balance));
+      socialTable.push(row);
+      // Calculate expenses based on 2% inflation.
+      expenses = expenses * 1.02;
+      currentYear++;
+    }
+    if (balance > 0) {
       breakeven = true;
+      let table = new Map();
+      table.set('fullTime', fullTimeTable);
+      table.set('partTime', partTimeTable);
+      table.set('preSocial', preSocialTable);
+      table.set('social', socialTable)
+      return table;
     }
     else {
-      balance = nestEgg;
       contribution = contribution + 1000;
       partTimeContribution = contribution / 3;
+      catcher++;
+      table = new Map();
     }
-    catcher++;
   }
-  // Show post-retirement, pre-Social Security period
-  for (let i = 1; i <= preSocial; i++) {
-    let row = new Map();
-    row.set('year', currentYear);
-    row.set('age', Number(fireAge) + i);
-    row.set('start', balance);
-    row.set('contribution', 0);
-    var returnOnInvestment = Number(Math.round((balance - expenses) * retireReturnRate));
-    row.set('return', returnOnInvestment);
-    row.set('withdrawal', expenses);
-    balance = balance + returnOnInvestment - expenses;
-    row.set('balance', Math.round(balance));
-    preSocialTable.push(row);
-    // Calculate expenses based on 2% inflation.
-    expenses = expenses * 1.02;
-    currentYear++;
-  }
-  // Show Social Security period.
-  contribution = expenses / 3;
-  for (let i = 66; i <= 90; i++) {
-    let row = new Map();
-    row.set('year', currentYear);
-    row.set('age', i);
-    row.set('start', balance);
-    row.set('contribution', contribution);
-    // Calculate ROI to include 50% of annual contribution, minus expenses.
-    var returnOnInvestment = Number(Math.round((balance - expenses + contribution / 2) * retireReturnRate));
-    row.set('return', returnOnInvestment);
-    row.set('withdrawal', expenses);
-    balance = balance + returnOnInvestment - expenses + contribution;
-    row.set('balance', Math.round(balance));
-    socialTable.push(row);
-
-    // Calculate expenses based on 2% inflation.
-    expenses = expenses * 1.02;
-    currentYear++;
-  }
-  let table = new Map();
-  table.set('fullTime', fullTimeTable);
-  table.set('partTime', partTimeTable);
-  table.set('preSocial', preSocialTable);
-  table.set('social', socialTable)
-  return table;
 }
 
 function generateTable(list, title, returnRate) {
@@ -199,7 +201,7 @@ function generateTable(list, title, returnRate) {
     returnOnInvestment.innerHTML = '$' + Number(Math.round(list[i].get('return'))).toLocaleString();
 
     var contribution = trow.insertCell(-1);
-    contribution.innerHTML = '$' + Number(Math.round(list[i].get('contribution'))).toLocaleString() + ' ($' + Number(Math.round(list[i].get('contribution') /12)).toLocaleString() + ' monthly)';
+    contribution.innerHTML = '$' + Number(Math.round(list[i].get('contribution'))).toLocaleString() + ' ($' + Number(Math.round(list[i].get('contribution') / 12)).toLocaleString() + ' monthly)';
 
     var withdrawal = trow.insertCell(-1);
     withdrawal.innerHTML = '$' + Number(Math.round(list[i].get('withdrawal'))).toLocaleString();
@@ -214,9 +216,11 @@ function generateChart(data) {
   var el = document.getElementById("chart");
   el.innerHTML = "";
   var chartData = [];
+  console.log(data);
+  if (typeof data !== 'undefined') {
   var fullTime = data.get('fullTime');
   for (var i = 0; i < fullTime.length; i++) {
-    chartData.push({ x: fullTime[i].get('year'), y: fullTime[i].get('balance'), color: "green"});
+    chartData.push({ x: fullTime[i].get('year'), y: fullTime[i].get('balance'), color: "green" });
   }
   var partTime = data.get('partTime');
   for (var i = 0; i < partTime.length; i++) {
@@ -228,7 +232,7 @@ function generateChart(data) {
   }
   var social = data.get('social');
   for (var i = 0; i < social.length; i++) {
-    chartData.push({x : social[i].get('year'), y: social[i].get('balance')});
+    chartData.push({ x: social[i].get('year'), y: social[i].get('balance') });
   }
   var chart = new CanvasJS.Chart("chart", {
     animationEnabled: true,
@@ -243,6 +247,8 @@ function generateChart(data) {
     }]
   });
   chart.render();
+  }
+
 }
 
 function fire() {
@@ -256,6 +262,9 @@ function fire() {
   var salaryIncrease = document.getElementById('salaryIncrease').checked;
   // Output.
   var data = calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, retireReturnRate, expenses, salaryIncrease);
+  if (typeof data == 'undefined') {
+    return;
+  }
   generateChart(data);
   var fullTime = generateTable(data.get('fullTime'), 'Full-time phase', returnRate);
   var el = document.getElementById("fullTime");
@@ -290,7 +299,7 @@ function fire() {
   document.getElementById("currentAgeDisplay").innerHTML = currentAge;
   document.getElementById("partTimeYearsDisplay").innerHTML = partTimeYears;
   document.getElementById("fireAgeDisplay").innerHTML = fireAge;
-  document.getElementById("nestEggDisplay").innerHTML =  '$' + Number(nestEgg).toLocaleString();
+  document.getElementById("nestEggDisplay").innerHTML = '$' + Number(nestEgg).toLocaleString();
   document.getElementById("expensesDisplay").innerHTML = '$' + Number(expenses).toLocaleString();
   document.getElementById("returnRateDisplay").innerHTML = returnRate + '%';
   document.getElementById("retireReturnRateDisplay").innerHTML = retireReturnRate + '%';

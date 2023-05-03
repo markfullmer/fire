@@ -7,14 +7,16 @@ Copyright and license notices must be preserved. Contributors provide an express
 */
 function set() {
   const urlParams = new URLSearchParams(window.location.search);
-  var currentAge = urlParams.get('currentAge') ?? 30;
+  var currentAge = urlParams.get('currentAge') ?? 25;
   var partTimeYears = urlParams.get('partTimeYears') ?? 0;
   var fireAge = urlParams.get('fireAge') ?? 45;
   var nestEgg = urlParams.get('nestEgg') ?? 50000;
   var expenses = urlParams.get('expenses') ?? 50000;
   var returnRate = urlParams.get('returnRate') ?? 7.5;
   var retireReturnRate = urlParams.get('retireReturnRate') ?? 5;
-  var salaryIncrease = urlParams.get('salaryIncrease') === 'false' ? false : true;
+  var retireIncome = urlParams.get('retireIncome') ?? 2500;
+  var benefitAge = urlParams.get('benefitAge') ?? 62;
+  var salaryIncrease = urlParams.get('salaryIncrease') === 'true' ? true : false;
 
   document.getElementById("currentAge").value = currentAge;
   document.getElementById("currentAgeDisplay").innerHTML = currentAge;
@@ -31,6 +33,9 @@ function set() {
   document.getElementById("returnRateDisplay").innerHTML = returnRate;
   document.getElementById("retireReturnRate").value = retireReturnRate;
   document.getElementById("retireReturnRateDisplay").innerHTML = retireReturnRate;
+  document.getElementById("retireIncome").value = retireIncome;
+  document.getElementById("benefitAge").value = benefitAge;
+  document.getElementById("benefitAgeDisplay").innerHTML = benefitAge;
   fire();
 }
 
@@ -43,14 +48,16 @@ function shareUrl() {
     expenses: document.getElementById("expenses").value,
     returnRate: document.getElementById("returnRate").value,
     retireReturnRate: document.getElementById("retireReturnRate").value,
+    retireIncome: document.getElementById("retireIncome").value,
+    benefitAge: document.getElementById("benefitAge").value,
     salaryIncrease: document.getElementById("salaryIncrease").checked,
   });
   var url = window.location.origin + '?' + params.toString();
   document.getElementById("shareUrl").innerHTML = '<a href="' + url + '">' + url + '</a>';
 }
 
-function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, retireReturnRate, expenses, salaryIncrease) {
-  var preSocial = 65 - fireAge;
+function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, retireReturnRate, expenses, salaryIncrease, retireIncome, benefitAge) {
+  var preSocial = benefitAge - fireAge;
   var fullTimeYears = Number(fireAge - partTimeYears - currentAge);
   var balance = Number(nestEgg);
   var contribution = 0;
@@ -134,20 +141,18 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
       expenses = expenses * 1.02;
       currentYear++;
     }
-
     // Calculate Social Security period.
-    let sscontribution = Number(Math.round(expenses / 3));
-    for (let i = 66; i <= 90; i++) {
+    for (let i = benefitAge; i <= 90; i++) {
       let row = new Map();
       row.set('year', currentYear);
       row.set('age', i);
       row.set('start', balance);
-      row.set('contribution', sscontribution);
+      row.set('contribution', retireIncome * 12);
       // Calculate ROI to include 50% of annual contribution, minus expenses.
-      var returnOnInvestment = Number(Math.round((balance - expenses + sscontribution / 2) * retireReturnRate));
+      var returnOnInvestment = Number(Math.round((balance - expenses + retireIncome *12) * retireReturnRate));
       row.set('return', returnOnInvestment);
       row.set('withdrawal', expenses);
-      balance = balance + returnOnInvestment - expenses + sscontribution;
+      balance = balance + returnOnInvestment - expenses + retireIncome * 12;
       row.set('balance', Math.round(balance));
       socialTable.push(row);
       // Calculate expenses based on 2% inflation.
@@ -164,7 +169,7 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
       return table;
     }
     else {
-      contribution = contribution + 1000;
+      contribution = contribution + 500;
       partTimeContribution = contribution / 3;
       catcher++;
       table = new Map();
@@ -259,9 +264,11 @@ function fire() {
   var expenses = document.getElementById('expenses').value;
   var returnRate = document.getElementById('returnRate').value;
   var retireReturnRate = document.getElementById('retireReturnRate').value;
+  var retireIncome = document.getElementById('retireIncome').value;
+  var benefitAge = document.getElementById('benefitAge').value;
   var salaryIncrease = document.getElementById('salaryIncrease').checked;
   // Output.
-  var data = calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, retireReturnRate, expenses, salaryIncrease);
+  var data = calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, returnRate, retireReturnRate, expenses, salaryIncrease, retireIncome, benefitAge);
   if (typeof data == 'undefined') {
     return;
   }
@@ -303,4 +310,6 @@ function fire() {
   document.getElementById("expensesDisplay").innerHTML = '$' + Number(expenses).toLocaleString();
   document.getElementById("returnRateDisplay").innerHTML = returnRate + '%';
   document.getElementById("retireReturnRateDisplay").innerHTML = retireReturnRate + '%';
+  document.getElementById("retireIncome").innerHTML = retireIncome;
+  document.getElementById("benefitAgeDisplay").innerHTML = benefitAge;
 }

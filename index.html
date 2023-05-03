@@ -146,6 +146,24 @@ Design:
 </tr>
 <tr>
   <td>
+    <label for="benefitAge">Age to start drawing benefits (Social Security, pension)</label>
+  </td>
+  <td>
+    <input oninput="fire()" type="range" min="62" max="70" step="1"
+      id="benefitAge">
+    <output id="benefitAgeDisplay"></output>
+  </td>
+</tr>
+<tr>
+  <td>
+    <label for="retireIncome">Estimated monthly benefits income (Social Security, pension)</label>
+  </td>
+  <td>
+    <input onchange="fire()" type="text" id="retireIncome" />
+  </td>
+</tr>
+<tr>
+  <td>
     <label for="salaryIncrease">Increase contributions by 5% annually to reflect salary raise</label>
   </td>
   <td>

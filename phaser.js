@@ -141,6 +141,13 @@ function calculateContribution(currentAge, partTimeYears, fireAge, nestEgg, retu
       expenses = expenses * 1.02;
       currentYear++;
     }
+    if (balance < 0) {
+      contribution = contribution + 500;
+      partTimeContribution = contribution / 3;
+      catcher++;
+      table = new Map();
+      continue;
+    }
     // Calculate Social Security period.
     for (let i = benefitAge; i <= 90; i++) {
       let row = new Map();
